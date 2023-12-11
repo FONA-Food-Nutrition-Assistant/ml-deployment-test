@@ -15,7 +15,7 @@ app.post('/predict', bodyParser.json(), async (req, res) => {
 	const result = await logic.doPrediction(req.body.imgURL)
 	
 	res.status(200).json({
-		message: 'Give top 5 predictions:',
+		message: 'predicted class:',
 		result: result,
 	});
 });

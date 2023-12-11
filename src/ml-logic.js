@@ -4,13 +4,13 @@ const tfjs_conv = require('@tensorflow/tfjs-converter');
 var path = require('path');
 const canvass = require('canvas')
 
-TEST_IMG_URL = "https://storage.googleapis.com/fona-dev-bucket/foods/user-food-1.jpg"
-
-const MODEL_URL = tfn.io.fileSystem(path.join(__dirname, '..', 'from_saved_model', 'model.json'))
-
-const IMG_SIZE = 224
-
-const pred_class = require('../predClass.json')
+// change parameter based on model used.
+const modelParameter = {
+	MODEL_URL: tfn.io.fileSystem(path.join(__dirname, '..', 'from_saved_model', 'model.json')),
+	IMG_SIZE: 224, 
+	PRED_CLASS: require('../predClass.json'),
+	CLASS_TO_SHOW: 10
+}
 
 // async function loadModel(){
 // 	const model = await tf.loadGraphModel(MODEL_URL)
@@ -23,26 +23,26 @@ const pred_class = require('../predClass.json')
  */
 async function doPrediction(imgURL) {
 	// model = loadModel()
-	const model = await tf.loadGraphModel(MODEL_URL)
+	const model = await tf.loadGraphModel(modelParameter.MODEL_URL)
 
-	const imgElement = new canvass.createCanvas(IMG_SIZE, IMG_SIZE, 3)
+	const imgElement = new canvass.createCanvas(modelParameter.IMG_SIZE, modelParameter.IMG_SIZE, 3)
 	
 	imgElement.src = imgURL
 
-	const img = tf.browser.fromPixels(imgElement).reshape([-1, IMG_SIZE, IMG_SIZE, 3]).toFloat()
+	const img = tf.browser.fromPixels(imgElement).reshape([-1, modelParameter.IMG_SIZE, modelParameter.IMG_SIZE, 3]).toFloat()
 	
 	prediction = model.predict(img).dataSync()
 	
-	top5 = Array.from(prediction).map(function(p,i){
+	top = Array.from(prediction).map(function(p,i){
 		return {
 			probability: p,
-			className: pred_class[i]
+			className: modelParameter.PRED_CLASS[i]
 		};
 	}).sort(function(a,b){
 		return b.probability-a.probability;
-	}).slice(0,5)
+	}).slice(0,modelParameter.CLASS_TO_SHOW)
 
-	return top5;
+	return top;
 }
 
 module.exports = {
